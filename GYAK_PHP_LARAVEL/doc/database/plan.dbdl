@@ -1,0 +1,104 @@
+//Use on dbdiagram.io
+
+table users{
+  id uuid PK
+  name string
+  email string
+  password string
+  extra json [default: '[]']
+  troll boolean [default: false]
+}
+
+table tenants{
+  id uuid PK
+  name string
+  address_id string [default: null]
+  extra json [default: '[]']
+  description text [default: null]
+}
+
+table servers{
+  id uuid PK
+  tenant_id uuid
+  name string
+  user_id uuid
+  address_id string [default: null]
+  extra json [default: '[]']
+  description text [default: null]
+}
+
+
+table images{
+  id uuid PK
+  src string
+}
+
+table posts{
+  id uuid PK
+  title string
+  content text
+  server_id uuid
+}
+
+table services{
+  id uuid PK
+  server_id uuid
+  name string
+  description text
+  extra json [default: '[]']
+  duration integer [note: "In Minutes"]
+}
+
+table appointments{
+  id uuid PK
+  user_id uuid
+  service_id uuid
+  begin_time timestamp
+  end_time timestamp
+  note text [default: '']
+}
+
+table addresses{
+  id uuid PK
+  name string
+  phone string
+  email string
+  country string [default: 'hu']
+  city string [default: null]
+  postcode string [default: null]
+  street string [default: null]
+}
+
+table imageable{
+  id bigint [PK, increment]
+  image_id uuid
+  imageable_id uuid
+  imageable_type string
+  
+}
+
+Ref: "images"."id" < "imageable"."image_id"
+
+Ref: "tenants"."id" < "servers"."tenant_id"
+
+Ref: "servers"."id" < "services"."server_id"
+
+Ref: "services"."id" < "appointments"."service_id"
+
+Ref: "servers"."id" < "posts"."server_id"
+
+Ref: "posts"."id" < "imageable"."imageable_id"
+
+Ref: "services"."id" < "imageable"."imageable_id"
+
+Ref: "servers"."id" < "imageable"."imageable_id"
+
+Ref: "users"."id" < "appointments"."user_id"
+
+Ref: "users"."id" < "imageable"."imageable_id"
+
+Ref: "addresses"."id" < "servers"."address_id"
+
+Ref: "addresses"."id" < "tenants"."address_id"
+
+Ref: "users"."id" < "servers"."user_id"

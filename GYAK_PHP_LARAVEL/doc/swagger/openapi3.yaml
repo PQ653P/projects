@@ -1,0 +1,1556 @@
+openapi: 3.0.0
+info:
+  version: dev_0.1.1
+  title: ApPoint Application
+  description: ''
+servers:
+  - description: 'Local virtual server.'
+    url: 'http://appoint.test/{Tenant}/'
+    variables:
+      Tenant:
+        default: 'test_tenant'
+        description: 'Id of the active tenant'
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+  responses:
+    '200':
+      description: 'OK. Default accept statuscode.'
+    '201':
+      description: 'Created. Resource was stored in database.'
+    '202':
+      description: 'Accepted. Successfully ran the command.'
+    '422': 
+      description: 'Unprocessable Entity. The server understands the content type of the request entity, and the syntax of the request entity is correct, but it was unable to process the contained instructions. For example this can be caused by missing a required field.'
+    '400':
+      description: 'Bad request. Invalid request and/or syntax error, probably malformed.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Message'
+    '401':
+      description: 'Unauthenticated. Probably missing a bearer token'
+    '403':
+      description: 'Forbidden. User is autheticated, but does not have permission for this operation'
+    '404':
+      description: 'Not found. No record found which satisfies all of the given parameters'
+    '500':
+      description: 'Server error. Error in server code. This was logged. User should repeat the request in a few minutes.'
+  schemas:
+    Paginator:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        first_page_url:
+          type: string
+          example: 'http://appoint.test/fritsch.percival/posts?page=1'
+        from:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 50
+        last_page_url:
+          type: string
+          example: 'http://appoint.test/fritsch.percival/posts?page=50'
+        links:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: 'http://appoint.test/fritsch.percival/posts?page=1'
+              label:
+                type: integer
+                example: 1
+              active:
+                type: boolean
+                example: true
+        next_page_url:
+          type: string
+          example: 'http://appoint.test/fritsch.percival/posts?page=2'
+        path:
+          type: string
+          example: 'http://appoint.test/fritsch.percival/posts'
+        per_page:
+          type: integer
+          example: 1
+        prev_page_url:
+          type: string
+          example: 'null'
+        to:
+          type: integer
+          example: 1
+        total:
+          type: integer
+          example: 50
+    Post:
+      type: object
+      properties:
+        id: 
+          type: string
+          example: '028f486c-36a9-48fd-ae1a-00940173b7d0'
+        title:
+          type: string
+          example: 'Lorem Ipsum'
+        content:
+          type: string
+          example: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+        created_at:
+          type: string
+          example: '2021-07-30T13:35:20.000000Z'
+        updated_at:
+          type: string
+          example: '2021-07-30T13:35:20.000000Z'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        user:
+          allOf:
+            - type: object
+            - $ref: '#/components/schemas/User'
+    Image:
+      type: object
+      properties:
+        id: 
+          type: string
+          example: '028f486c-36a9-48fd-ae1a-00940173b7d0'
+        src:
+          type: string
+          example: 'tenant/placeholder.png'
+        created_at:
+          type: string
+          example: '2021-07-30T13:35:20.000000Z'
+        updated_at:
+          type: string
+          example: '2021-07-30T13:35:20.000000Z'
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '028f486c-36a9-48fd-ae1a-00940173b7d0'
+        name:
+          type: string
+          example: 'John Doe'
+        email:
+          type: string
+          example: 'john.doe@example.test'
+        troll:
+          type: boolean
+          example: true
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+        created_at:
+          type: string # Dates are represented as strings as defined at https://swagger.io/docs/specification/data-models/data-types/
+          example: '2021-01-19 13:14:07'
+        updated_at:
+          type: string
+          example: '2021-01-19 13:14:07'
+        email_verified_at:
+          type: string
+          example: '2021-01-19 13:14:07'
+        extra:
+          description: Any additional data
+          type: object
+          example: '{"lorem": "ipsum"}'
+    Role:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'super_admin'
+        title:
+          type: string
+          example: 'Super Admin'
+        abilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ability'
+    Ability:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'index'
+        entity:
+          type: string
+          example: 'App\Models\Post'
+        entity_id:
+          type: string
+          example: '028f486c-36a9-48fd-ae1a-00940173b7d0'
+        only_owned:
+          type: boolean
+          example: false
+    Server:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            extra:
+              type: object
+              properties:
+                server:
+                  type: boolean
+                  example: true
+                description:
+                  type: string
+                  example: 'lorem ipsum'
+            services:
+              type: array
+              items:
+                $ref: '#/components/schemas/Service'
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '028f486c-36a9-48fd-ae1a-00940173b7d0'
+        name:
+          type: string
+          example: 'John Doe'
+        description:
+          type: string
+          example: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+        server:
+          $ref: '#/components/schemas/Server'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        appointments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Appointment'
+        created_at:
+          type: string # Dates are represented as strings as defined at https://swagger.io/docs/specification/data-models/data-types/
+          example: '2021-01-19 13:14:07'
+        updated_at:
+          type: string
+          example: '2021-01-19 13:14:07'
+    Appointment:
+      type: object
+      properties:
+        begin_time:
+          type: string
+          example: '2021-01-19 13:14:07'
+        end_time:
+          type: string
+          example: '2021-01-19 13:14:07'
+        note:
+          type: string
+          example: 'lorem ipsum...'
+        user:
+          $ref: '#/components/schemas/User'
+        service:
+          $ref: '#/components/schemas/Service'
+        created_at:
+          type: string # Dates are represented as strings as defined at https://swagger.io/docs/specification/data-models/data-types/
+          example: '2021-01-19 13:14:07'
+        updated_at:
+          type: string
+          example: '2021-01-19 13:14:07'
+    Message:
+      type: object 
+      properties:
+        message:
+          type: string
+          example: 'Email field is required'
+paths:
+  '/auth/login':
+    post:
+      tags:
+        - 'Auth'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: 'admin@test.com'
+                password:
+                  type: string
+                  example: 'password'
+                remember_me:
+                  type: boolean
+                  example: true
+      summary: 'Log the user in'
+      responses:
+        '202':
+          description: 'Login successfull'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...'
+                  token_type:
+                    type: string
+                    example: 'Bearer'
+                  expires_at:
+                    type: string
+                    example: '2021-08-28 10:54:44'
+        '400':
+          $ref: '#/components/responses/400'
+        '422':
+          $ref: '#/components/responses/422'
+        '401':
+          description: 'Email address is not in database or password is missmatched'
+  '/auth/register':
+    post:
+      tags:
+        - 'Auth'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: 'Test User'
+                email:
+                  type: string
+                  example: 'admin@test.com'
+                password:
+                  type: string
+                  example: 'password'
+                password_confirmation:
+                  type: string
+                  example: 'password'
+                accepted_tos:
+                  type: boolean
+                  example: true
+      summary: 'Register a new user'
+      responses:
+        '202':
+          description: 'Registration successfull'
+        '400':
+          $ref: '#/components/responses/400'
+        '422':
+          $ref: '#/components/responses/422'
+  '/auth/profile':
+    get:
+      tags:
+        - 'Auth'
+      summary: 'Inspect the currently logged in user'
+      security:
+        - {}
+        - Bearer: []
+      responses:
+        '200':
+          description: 'Registration successfull'
+        '401':
+          $ref: '#/components/responses/401'
+  '/posts':
+    get:
+      tags:
+        - Posts
+      summary: Get all posts for this Tenant. By default ordering is 'latest first'
+      parameters:
+        - in: query
+          name: title
+          required: false
+          description: 'Can be used to search in post titles. Returns posts matching the following pattern: `.*(?<title>.*).*`'
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          description: Return posts on given page (One based)
+          schema:
+            type: integer
+        - in: query
+          name: per_page
+          required: false
+          description: Can be used to set up the paginator. When set to 0 this endpoint returns all record at once.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Paginator'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+    post:
+      tags:
+        - Posts
+      summary: Create a new post
+      security:
+        - {}
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - title
+                - content
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Lorem Ipsum
+                content:
+                  type: string
+                  example: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.'
+                image:
+                  type: object
+                  example: BINARY
+      responses:
+        '201':
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+  '/posts/{post}':
+    get:
+      parameters:
+        - in: path
+          required: true
+          name: post
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      tags:
+        - Posts
+      summary: 'Inspect a single post'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+      
+    put:
+      parameters:
+        - in: path
+          required: true
+          name: post
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      tags:
+        - Posts
+      summary: 'Overwrite a post. This endpoint should be used if all form data will be posted.'
+      security:
+        - {}
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - title
+                - content
+                - image_change
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Lorem Ipsum
+                  description: Title of the post
+                content:
+                  type: string
+                  example: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.'
+                  description: Content of the post
+                image_change:
+                  type: boolean
+                  example: true
+                  description: Image will be updated if true, otherwise image field will be ignored
+                image:
+                  type: object
+                  example: BINARY
+      responses:
+        '202':
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+    patch:
+      parameters:
+        - in: path
+          required: true
+          name: post
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      tags:
+        - Posts
+      summary: 'Update a post. This endpoint should be used if only partial data will be posted.'
+      security:
+        - {}
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - image_change
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Lorem Ipsum
+                  description: Title of the post
+                content:
+                  type: string
+                  example: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.'
+                  description: Content of the post
+                image_change:
+                  type: boolean
+                  example: true
+                  description: Image will be updated if true, otherwise image field will be ignored
+                image:
+                  type: object
+                  example: BINARY
+      responses:
+        '202':
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+    delete:
+      parameters:
+        - in: path
+          required: true
+          name: post
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      security:
+        - {}
+        - Bearer: []
+      tags:
+        - Posts
+      summary: 'Delete a post.'
+      responses:
+        '202':
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+#User
+  '/users':
+      get:
+        security:
+          - {}
+          - Bearer: []
+        tags:
+          - Users
+        summary: Get all users. By default ordering is 'latest first'
+        parameters:
+          - in: query
+            name: search
+            required: false
+            description: Can be used to find user by name or email address.
+            schema:
+              type: string
+              
+          - in: query
+            name: page
+            required: false
+            description: Return users on given page (One based)
+            schema:
+              type: integer
+
+          - in: query
+            name: per_page
+            required: false
+            description: Can be used to set up the paginator. When set to 0 this endpoint returns all record at once.
+            schema:
+              type: integer
+              example: 0
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: '#/components/schemas/Paginator'
+                    - type: object
+                      properties:
+                        data:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/User'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '404':
+            $ref: '#/components/responses/404'
+      post:
+        tags:
+          - Users
+        summary: Create a new user
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - name
+                  - email
+                  - password
+                  - password_confirmation
+                type: object
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  password:
+                    type: string                
+                  password_confirmation:
+                    type: string                
+        responses:
+          '201':
+            description: CREATED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+  '/users/{user}':
+      get:
+        parameters:
+          - in: path
+            required: true
+            name: user
+            schema:
+              type: string
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+        tags:
+          - Users
+        summary: 'Inspect a user'
+        security:
+          - {}
+          - Bearer: []
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+        
+      put:
+        parameters:
+          - in: path
+            required: true
+            name: user
+            schema:
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+              type: string
+        tags:
+          - Users
+        summary: 'Overwrite a user.'
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - name
+                  - email
+                  - password
+                  - password_confirmation
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: John Doe
+                  email:
+                    type: string
+                    example: john.doe@example.test
+                  password:
+                    type: string       
+                  password_confirmation:
+                    type: string  
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+      patch:
+        parameters:
+          - in: path
+            required: true
+            name: user
+            schema:
+              type: string
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+        tags:
+          - Users
+        summary: 'Update a user.'
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - name
+                  - email
+                  - password
+                  - password_confirmation
+                type: object
+                properties:
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  password:
+                    type: string                  
+                  password_confirmation:
+                    type: string  
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+      delete:
+        parameters:
+          - in: path
+            required: true
+            name: user
+            schema:
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+              type: string
+        security:
+          - {}
+          - Bearer: []
+        tags:
+          - Users
+        summary: 'Delete a user.'
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+
+#Appointment
+  '/appointments':
+      get:
+        tags:
+          - Appointments
+        summary: Get all appointments for this Tenant. By default ordering is 'latest first'
+        parameters:
+          - in: query
+            name: appointment
+            required: false
+            description: 'Can be used to search in appointments. '
+            schema:
+              type: string
+          - in: query
+            name: page
+            required: false
+            description: Return appointments on given page (One based)
+            schema:
+              type: integer
+          - in: query
+            name: per_page
+            required: false
+            description: Can be used to set up the paginator. When set to 0 this endpoint returns all record at once.
+            schema:
+              type: integer
+              example: 0
+        security:
+        - {}
+        - Bearer: []
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: '#/components/schemas/Paginator'
+                    - type: object
+                      properties:
+                        data:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Appointment'
+          '400':
+            $ref: '#/components/responses/400'
+          '404':
+            $ref: '#/components/responses/404'
+      post:
+        tags:
+          - Appointments
+        summary: Create a new appointment
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - begin_time
+                  - end_time
+                  - note
+                type: object
+                properties:
+                  begin_time:
+                    type: string
+                    example: '2021-01-19 13:14:07'
+                  end_time:
+                    type: string
+                    example: '2021-01-19 13:20:07'
+                  note:
+                    type: string
+                    example: lorem ipsum
+        responses:
+          '201':
+            description: CREATED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+  '/appointments/{appointment}':
+      get:
+        parameters:
+          - in: path
+            required: true
+            name: appointment
+            schema:
+              type: string
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+        tags:
+          - Appointments
+        summary: 'Inspect a single appointment'
+        security:
+          - {}
+          - Bearer: []
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+        
+      put:
+        parameters:
+          - in: path
+            required: true
+            name: appointment
+            schema:
+              type: string
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+        tags:
+          - Appointments
+        summary: 'Overwrite an appointment. This endpoint should be used if all form data will be posted.'
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - begin_time
+                  - end_time
+                  - note
+                type: object
+                properties:
+                  begin_time:
+                    type: string
+                    example: '2021-01-19 13:14:07'
+                    description: Begin time of the appointment, it must be greater than now and lower than end time.
+                  end_time:
+                    type: string
+                    example: '2021-01-19 13:20:07'
+                    description: End time of the appointment, it must be greater than the begin time.
+                  note:
+                    type: string
+                    example: Lorem ipsum
+                    description: Note of the appointment.
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+      patch:
+        parameters:
+          - in: path
+            required: true
+            name: appointment
+            schema:
+              type: string
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+        tags:
+          - Appointments
+        summary: 'Update a appointment. This endpoint should be used if only partial data will be posted.'
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  begin_time:
+                    type: string
+                    example: '2021-01-19 13:14:07'
+                    description: Begin time of the appointment, it must be greater than now and lower than end time.
+                  end_time:
+                    type: string
+                    example: '2021-01-19 13:20:07'
+                    description: End time of the appointment, it must be greater than the begin time.
+                  note:
+                    type: string
+                    example: Lorem ipsum
+                    description: Note of the appointment
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+      delete:
+        parameters:
+          - in: path
+            required: true
+            name: appointment
+            schema:
+              type: string
+              example: b9049e77-928d-4bbb-b5fe-191454619986
+        security:
+          - {}
+          - Bearer: []
+        tags:
+          - Appointments
+        summary: 'Delete a appointment.'
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Appointment'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+#Image  
+  '/images':
+        get:
+          security:
+            - {}
+            - Bearer: []
+          tags:
+            - Images
+          summary: Get all images. 
+          parameters:
+            - in: query
+              name: search
+              required: false
+              description: Can be used to search images by path.
+              schema:
+                type: string
+          responses:
+            '200':
+              description: 'OK'
+              content:
+                application/json:
+                  schema:
+                    allOf:
+                      - $ref: '#/components/schemas/Paginator'
+                      - type: object
+                        properties:
+                          data:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Image'
+            '400':
+              $ref: '#/components/responses/400'
+            '404':
+              $ref: '#/components/responses/404'
+  '/images/{image}':
+      get:
+        parameters:
+          - in: path
+            required: true
+            name: image
+            schema:
+              type: string
+              example: 028f486c-36a9-48fd-ae1a-00940173b7d0
+        tags:
+          - Images
+        summary: 'Inspect a image'
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Image'
+      delete:
+        parameters:
+          - in: path
+            required: true
+            name: image
+            schema:
+              example: 028f486c-36a9-48fd-ae1a-00940173b7d0
+              type: string
+        security:
+          - {}
+          - Bearer: []
+        tags:
+          - Images
+        summary: 'Delete an image'
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Image'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+#Server
+  '/servers':
+      get:
+        tags:
+          - Servers
+        summary: Get all server for this Tenant. By default ordering is 'latest first'
+        parameters:
+          - in: query
+            name: server
+            required: false
+            description: 'Can be used to search in servers. '
+            schema:
+              type: string
+          - in: query
+            name: page
+            required: false
+            description: Return servers on given page (One based)
+            schema:
+              type: integer
+          - in: query
+            name: per_page
+            required: false
+            description: Can be used to set up the paginator. When set to 0 this endpoint returns all record at once.
+            schema:
+              type: integer
+              example: 0
+        security:
+        - {}
+        - Bearer: []
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  allOf:
+                    - $ref: '#/components/schemas/Paginator'
+                    - type: object
+                      properties:
+                        data:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/Server'
+          '400':
+            $ref: '#/components/responses/400'
+          '404':
+            $ref: '#/components/responses/404'
+  '/servers/{server}':
+      get:
+        parameters:
+          - in: path
+            required: true
+            name: server
+            schema:
+              type: string
+              example: 028f486c-36a9-48fd-ae1a-00940173b7d0
+        tags:
+          - Servers
+        summary: 'Inspect a single server'
+        security:
+          - {}
+          - Bearer: []
+        responses:
+          '200':
+            description: 'OK'
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Server'
+      post:
+        parameters:
+          - in: path
+            name: server
+            required: true
+            schema:
+              type: string
+              description: User to make a server from
+        tags:
+          - Servers
+        summary: Create a new server from user
+        security:
+          - {}
+          - Bearer: []
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                required:
+                  - name
+                  - email
+                  - extra
+                type: object
+                properties:
+                  description:
+                    type: string
+                    example: 'lorem ipsum...'
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Server'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+      delete:
+        parameters:
+          - in: path
+            required: true
+            name: server
+            schema:
+              type: string
+              example: 028f486c-36a9-48fd-ae1a-00940173b7d0
+        security:
+          - {}
+          - Bearer: []
+        tags:
+          - Servers
+        summary: 'Delete a server.'
+        responses:
+          '202':
+            description: ACCEPTED
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Server'
+          '400':
+            $ref: '#/components/responses/400'
+          '401':
+            $ref: '#/components/responses/401'
+          '403':
+            $ref: '#/components/responses/403'
+          '422':
+            $ref: '#/components/responses/422'
+# SERVICES
+  '/services':
+    get:
+      tags:
+        - Services
+      summary: Get all services for this Tenant. By default ordering is 'latest first'
+      parameters:
+        - in: query
+          name: service
+          required: false
+          description: 'Can be used to search in post titles. Returns posts matching the following pattern: `.*(?<title>.*).*`'
+          schema:
+            type: string
+        - in: query
+          name: page
+          required: false
+          description: Return services on given page (One based)
+          schema:
+            type: integer
+        - in: query
+          name: per_page
+          required: false
+          description: Can be used to set up the paginator. When set to 0 this endpoint returns all record at once.
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Paginator'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Service'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+    post:
+      tags:
+        - Services
+      summary: Create a new service
+      security:
+        - {}
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - name
+                - description
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                description:
+                  type: string
+                  example: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                duration:
+                  type: number
+                  example: 15
+                image:
+                  type: object
+                  example: BINARY
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+  '/services/{service}':
+    get:
+      parameters:
+        - in: path
+          required: true
+          name: service
+          schema:
+            type: string
+            example: 028f486c-36a9-48fd-ae1a-00940173b7d0
+      tags:
+        - Services
+      summary: 'Inspect a single service'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+      
+    put:
+      parameters:
+        - in: path
+          required: true
+          name: service
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      tags:
+        - Services
+      summary: 'Overwrite a service. This endpoint should be used if all form data will be posted.'
+      security:
+        - {}
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - name
+                - description
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                description:
+                  type: string
+                  example: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                image:
+                  type: object
+                  example: BINARY
+      responses:
+        '202':
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+    patch:
+      parameters:
+        - in: path
+          required: true
+          name: service
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      tags:
+        - Services
+      summary: 'Update a service. This endpoint should be used if only partial data will be posted.'
+      security:
+        - {}
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - name
+                - description
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                description:
+                  type: string
+                  example: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
+                image:
+                  type: object
+                  example: BINARY
+      responses:
+        '202':
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+    delete:
+      parameters:
+        - in: path
+          required: true
+          name: service
+          schema:
+            type: string
+            example: b9049e77-928d-4bbb-b5fe-191454619986
+      security:
+        - {}
+        - Bearer: []
+      tags:
+        - Services
+      summary: 'Delete a service.'
+      responses:
+        '202':
+          description: ACCEPTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
